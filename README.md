@@ -1,11 +1,10 @@
-# Connect
-
 [![NPM Version][npm-image]][npm-url]
-[![NPM Downloads][downloads-image]][downloads-url]
 [![Build Status][travis-image]][travis-url]
-[![Test Coverage][coveralls-image]][coveralls-url]
 
-  Connect is an extensible HTTP server framework for [node](http://nodejs.org) using "plugins" known as _middleware_.
+# @pirxpilot/connect
+
+This is a simplified fork of [connect] with some dependencies removed.
+Connect is an extensible HTTP server framework for [node](http://nodejs.org) using "plugins" known as _middleware_.
 
 ```js
 var connect = require('connect');
@@ -127,48 +126,6 @@ to `.createServer()` in Node.js.
 var server = http.createServer(app);
 ```
 
-## Middleware
-
-These middleware and libraries are officially supported by the Connect/Express team:
-
-  - [body-parser](https://www.npmjs.com/package/body-parser) - previous `bodyParser`, `json`, and `urlencoded`. You may also be interested in:
-    - [body](https://www.npmjs.com/package/body)
-    - [co-body](https://www.npmjs.com/package/co-body)
-    - [raw-body](https://www.npmjs.com/package/raw-body)
-  - [compression](https://www.npmjs.com/package/compression) - previously `compress`
-  - [connect-timeout](https://www.npmjs.com/package/connect-timeout) - previously `timeout`
-  - [cookie-parser](https://www.npmjs.com/package/cookie-parser) - previously `cookieParser`
-  - [cookie-session](https://www.npmjs.com/package/cookie-session) - previously `cookieSession`
-  - [csurf](https://www.npmjs.com/package/csurf) - previously `csrf`
-  - [errorhandler](https://www.npmjs.com/package/errorhandler) - previously `error-handler`
-  - [express-session](https://www.npmjs.com/package/express-session) - previously `session`
-  - [method-override](https://www.npmjs.com/package/method-override) - previously `method-override`
-  - [morgan](https://www.npmjs.com/package/morgan) - previously `logger`
-  - [response-time](https://www.npmjs.com/package/response-time) - previously `response-time`
-  - [serve-favicon](https://www.npmjs.com/package/serve-favicon) - previously `favicon`
-  - [serve-index](https://www.npmjs.com/package/serve-index) - previously `directory`
-  - [serve-static](https://www.npmjs.com/package/serve-static) - previously `static`
-  - [vhost](https://www.npmjs.com/package/vhost) - previously `vhost`
-
-Most of these are exact ports of their Connect 2.x equivalents. The primary exception is `cookie-session`.
-
-Some middleware previously included with Connect are no longer supported by the Connect/Express team, are replaced by an alternative module, or should be superseded by a better module. Use one of these alternatives instead:
-
-  - `cookieParser`
-    - [cookies](https://www.npmjs.com/package/cookies) and [keygrip](https://www.npmjs.com/package/keygrip)
-  - `limit`
-    - [raw-body](https://www.npmjs.com/package/raw-body)
-  - `multipart`
-    - [connect-multiparty](https://www.npmjs.com/package/connect-multiparty)
-    - [connect-busboy](https://www.npmjs.com/package/connect-busboy)
-  - `query`
-    - [qs](https://www.npmjs.com/package/qs)
-  - `staticCache`
-    - [st](https://www.npmjs.com/package/st)
-    - [connect-static](https://www.npmjs.com/package/connect-static)
-
-Checkout [http-framework](https://github.com/Raynos/http-framework/wiki/Modules) for many other compatible middleware!
-
 ## API
 
 The Connect API is very minimalist, enough to create an app and add a chain
@@ -179,10 +136,10 @@ a new app when called.
 
 ```js
 // require module
-var connect = require('connect')
+var connect = require('connect');
 
 // create app
-var app = connect()
+var app = connect();
 ```
 
 ### app(req, res[, next])
@@ -216,7 +173,7 @@ app.use(function (req, res, next) {
   // req is the Node.js http request object
   // res is the Node.js http response object
   // next is a function to call to invoke the next middleware
-})
+});
 ```
 
 In addition to a plan function, the `fn` argument can also be a Node.js HTTP server
@@ -234,7 +191,7 @@ app.use('/foo', function (req, res, next) {
   // req is the Node.js http request object
   // res is the Node.js http response object
   // next is a function to call to invoke the next middleware
-})
+});
 ```
 
 In addition to a plan function, the `fn` argument can also be a Node.js HTTP server
@@ -253,13 +210,6 @@ original will be available as `req.originalUrl`). For example, if `fn` is used a
 route `/foo`, the request for `/foo/bar` will invoke `fn` with `req.url === '/bar'`
 and `req.originalUrl === '/foo/bar'`.
 
-## Running Tests
-
-```bash
-npm install
-npm test
-```
-
 ## People
 
 The Connect project would not be the same without all the people involved.
@@ -270,23 +220,12 @@ The current lead maintainer is [Douglas Christopher Wilson](https://github.com/d
 
 [List of all contributors](https://github.com/senchalabs/connect/graphs/contributors)
 
-## Node Compatibility
-
-  - Connect `< 1.x` - node `0.2`
-  - Connect `1.x` - node `0.4`
-  - Connect `< 2.8` - node `0.6`
-  - Connect `>= 2.8 < 3` - node `0.8`
-  - Connect `>= 3` - node `0.10`, `0.12`, `4.x`, `5.x`, `6.x`, `7.x`, `8.x`; io.js `1.x`, `2.x`, `3.x`
-
 ## License
 
 [MIT](LICENSE)
 
-[npm-image]: https://img.shields.io/npm/v/connect.svg
-[npm-url]: https://npmjs.org/package/connect
-[travis-image]: https://img.shields.io/travis/senchalabs/connect/master.svg
-[travis-url]: https://travis-ci.org/senchalabs/connect
-[coveralls-image]: https://img.shields.io/coveralls/senchalabs/connect/master.svg
-[coveralls-url]: https://coveralls.io/r/senchalabs/connect
-[downloads-image]: https://img.shields.io/npm/dm/connect.svg
-[downloads-url]: https://npmjs.org/package/connect
+[connect]: htps://github.com/sencha/connect
+[npm-image]: https://img.shields.io/npm/v/@pirxpilot/connect.svg
+[npm-url]: https://npmjs.org/package/@pirxpilot/connect
+[travis-image]: https://img.shields.io/travis/com/pirxpilot/connect.svg
+[travis-url]: https://travis-ci.com/pirxpilot/connect

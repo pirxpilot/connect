@@ -33,9 +33,6 @@
     "index.js"
   ],
   "scripts": {
-    "lint": "eslint .",
-    "test": "mocha --require test/support/env --reporter spec --bail --check-leaks test/",
-    "test-cov": "nyc --reporter=text npm test",
-    "test-travis": "nyc --reporter=html --reporter=text npm test"
+    "test": "make check"
   }
 }
