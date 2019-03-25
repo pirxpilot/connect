@@ -1,5 +1,5 @@
 {
-  "name": "connect",
+  "name": "@pirxpilot/connect",
   "description": "High performance middleware framework",
   "version": "3.6.7",
   "author": "TJ Holowaychuk <tj@vision-media.ca> (http://tjholowaychuk.com)",
@@ -15,7 +15,7 @@
     "connect",
     "rack"
   ],
-  "repository": "senchalabs/connect",
+  "repository": "pirxpilot/connect",
   "dependencies": {
     "debug": "2.6.9",
     "finalhandler": "1.1.1",
@@ -30,15 +30,8 @@
   },
   "license": "MIT",
   "files": [
-    "LICENSE",
-    "HISTORY.md",
-    "README.md",
-    "SECURITY.md",
     "index.js"
   ],
-  "engines": {
-    "node": ">= 0.10.0"
-  },
   "scripts": {
     "lint": "eslint .",
     "test": "mocha --require test/support/env --reporter spec --bail --check-leaks test/",
