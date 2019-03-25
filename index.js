@@ -268,16 +268,18 @@ function logerror(err) {
 
 function getProtohost(url) {
   if (url.length === 0 || url[0] === '/') {
-    return undefined;
+    return;
+  }
+
+  const fqdnIndex = url.indexOf('://');
+  if (fqdnIndex === -1) {
+    return;
   }
 
   const searchIndex = url.indexOf('?');
-  const pathLength = searchIndex !== -1
-    ? searchIndex
-    : url.length;
-  const fqdnIndex = url.substr(0, pathLength).indexOf('://');
+  if (searchIndex > -1 && fqdnIndex > searchIndex) {
+    return;
+  }
 
-  return fqdnIndex !== -1
-    ? url.substr(0, url.indexOf('/', 3 + fqdnIndex))
-    : undefined;
+  return url.slice(0, url.indexOf('/', 3 + fqdnIndex));
 }
