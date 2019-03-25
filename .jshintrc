@@ -1,0 +1,15 @@
+{
+  "eqeqeq": true,
+  "eqnull": true,
+  "immed": true,
+  "latedef": "nofunc",
+  "laxbreak": true,
+  "mocha" : true,
+  "newcap": true,
+  "noarg": true,
+  "node": true,
+  "sub": true,
+  "undef": true,
+  "unused": true,
+  "esversion": 6
+}

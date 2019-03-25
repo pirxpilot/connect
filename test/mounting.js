@@ -4,6 +4,8 @@ var connect = require('..');
 var http = require('http');
 var request = require('supertest');
 
+/* jshint unused:vars */
+
 describe('app.use()', function(){
   var app;
 
@@ -43,13 +45,13 @@ describe('app.use()', function(){
 
   it('should match up to dot', function (done) {
     app.use('/blog', function (req, res) {
-      res.end(req.url)
-    })
+      res.end(req.url);
+    });
 
     request(app)
     .get('/blog.json')
-    .expect(200, done)
-  })
+    .expect(200, done);
+  });
 
   it('should not match shorter path', function (done) {
     app.use('/blog-o-rama', function (req, res) {
@@ -114,11 +116,11 @@ describe('app.use()', function(){
     var invoked = [];
 
     app.use(function(req, res, next, _a, _b){
-      invoked.push(0)
+      invoked.push(0);
       next();
     });
     app.use(function(req, res, next){
-      invoked.push(1)
+      invoked.push(1);
       next(new Error('err'));
     });
     app.use(function(err, req, res, next){
@@ -206,8 +208,8 @@ describe('app.use()', function(){
       request(app)
       .get('/admin')
       .expect('/admin', done);
-    })
-  })
+    });
+  });
 
   describe('with a node app', function(){
     it('should mount', function(done){
@@ -228,7 +230,7 @@ describe('app.use()', function(){
     it('should send errors to airty 4 fns', function(done){
       app.use(function(req, res, next){
         next(new Error('msg'));
-      })
+      });
       app.use(function(err, req, res, next){
         res.end('got error ' + err.message);
       });
@@ -236,14 +238,14 @@ describe('app.use()', function(){
       request(app)
       .get('/')
       .expect('got error msg', done);
-    })
+    });
 
     it('should skip to non-error middleware', function(done){
       var invoked = false;
 
       app.use(function(req, res, next){
         next(new Error('msg'));
-      })
+      });
       app.use(function(req, res, next){
         invoked = true;
         next();
@@ -255,11 +257,9 @@ describe('app.use()', function(){
       request(app)
       .get('/')
       .expect(200, 'msg', done);
-    })
+    });
 
     it('should start at error middleware declared after error', function(done){
-      var invoked = false;
-
       app.use(function(err, req, res, next){
         res.end('fail: ' + err.message);
       });
@@ -273,12 +273,12 @@ describe('app.use()', function(){
       request(app)
       .get('/')
       .expect(200, 'pass: boom!', done);
-    })
+    });
 
     it('should stack error fns', function(done){
       app.use(function(req, res, next){
         next(new Error('msg'));
-      })
+      });
       app.use(function(err, req, res, next){
         res.setHeader('X-Error', err.message);
         next(err);
@@ -291,7 +291,7 @@ describe('app.use()', function(){
       .get('/')
       .expect('X-Error', 'msg')
       .expect(200, 'got error msg', done);
-    })
+    });
 
     it('should invoke error stack even when headers sent', function(done){
       app.use(function(req, res, next){
@@ -305,6 +305,6 @@ describe('app.use()', function(){
       request(app)
       .get('/')
       .end(function(){});
-    })
-  })
+    });
+  });
 });
