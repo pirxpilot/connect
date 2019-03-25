@@ -47,8 +47,12 @@ var defer = typeof setImmediate === 'function'
  * @public
  */
 
-function createServer() {
-  function app(req, res, next){ app.handle(req, res, next); }
+function createServer(options) {
+  options = options || {};
+  function app(req, res, next) {
+    next = next || options.finalhandler || defaultFinalHandler(req, res);
+    app.handle(req, res, next);
+  }
   merge(app, proto);
   merge(app, EventEmitter.prototype);
   app.route = '/';
@@ -124,10 +128,7 @@ proto.handle = function handle(req, res, out) {
   var stack = this.stack;
 
   // final function handler
-  var done = out || finalhandler(req, res, {
-    env: env,
-    onerror: logerror
-  });
+  var done = out || defaultFinalHandler(req, res);
 
   // store the original URL
   req.originalUrl = req.originalUrl || req.url;
@@ -280,4 +281,11 @@ function getProtohost(url) {
   return fqdnIndex !== -1
     ? url.substr(0, url.indexOf('/', 3 + fqdnIndex))
     : undefined;
+}
+
+function defaultFinalHandler(req, res) {
+  return finalhandler(req, res, {
+    env: env,
+    onerror: logerror
+  });
 }
