@@ -6,19 +6,16 @@
  * MIT Licensed
  */
 
-'use strict';
-
 /**
  * Module dependencies.
  * @private
  */
 
-var debug = require('debug')('connect:dispatcher');
-var EventEmitter = require('events').EventEmitter;
-var finalhandler = require('finalhandler');
-var http = require('http');
-var merge = require('utils-merge');
-var parseUrl = require('parseurl');
+const debug = require('debug')('connect:dispatcher');
+const { EventEmitter } = require('events').EventEmitter;
+const finalhandler = require('finalhandler');
+const http = require('http');
+const parseUrl = require('parseurl');
 
 /**
  * Module exports.
@@ -32,13 +29,17 @@ module.exports = createServer;
  * @private
  */
 
-var env = process.env.NODE_ENV || 'development';
-var proto = {};
+const env = process.env.NODE_ENV || 'development';
+const proto = {
+  use,
+  handle,
+  listen
+};
 
 /* istanbul ignore next */
-var defer = typeof setImmediate === 'function'
+const defer = typeof setImmediate === 'function'
   ? setImmediate
-  : function(fn){ process.nextTick(fn.bind.apply(fn, arguments)) }
+  : fn => process.nextTick(fn.bind(...arguments));
 
 /**
  * Create a new connect server.
@@ -49,8 +50,7 @@ var defer = typeof setImmediate === 'function'
 
 function createServer() {
   function app(req, res, next){ app.handle(req, res, next); }
-  merge(app, proto);
-  merge(app, EventEmitter.prototype);
+  Object.assign(app, proto, EventEmitter.prototype);
   app.route = '/';
   app.stack = [];
   return app;
@@ -73,9 +73,9 @@ function createServer() {
  * @public
  */
 
-proto.use = function use(route, fn) {
-  var handle = fn;
-  var path = route;
+function use(route, fn) {
+  let handle = fn;
+  let path = route;
 
   // default route to '/'
   if (typeof route !== 'string') {
@@ -85,7 +85,7 @@ proto.use = function use(route, fn) {
 
   // wrap sub-apps
   if (typeof handle.handle === 'function') {
-    var server = handle;
+    const server = handle;
     server.route = path;
     handle = function (req, res, next) {
       server.handle(req, res, next);
@@ -104,10 +104,10 @@ proto.use = function use(route, fn) {
 
   // add the middleware
   debug('use %s %s', path || '/', handle.name || 'anonymous');
-  this.stack.push({ route: path, handle: handle });
+  this.stack.push({ route: path, handle });
 
   return this;
-};
+}
 
 /**
  * Handle server requests, punting them down
@@ -116,16 +116,16 @@ proto.use = function use(route, fn) {
  * @private
  */
 
-proto.handle = function handle(req, res, out) {
-  var index = 0;
-  var protohost = getProtohost(req.url) || '';
-  var removed = '';
-  var slashAdded = false;
-  var stack = this.stack;
+function handle(req, res, out) {
+  let index = 0;
+  const protohost = getProtohost(req.url) || '';
+  let removed = '';
+  let slashAdded = false;
+  const stack = this.stack;
 
   // final function handler
-  var done = out || finalhandler(req, res, {
-    env: env,
+  const done = out || finalhandler(req, res, {
+    env,
     onerror: logerror
   });
 
@@ -144,7 +144,7 @@ proto.handle = function handle(req, res, out) {
     }
 
     // next callback
-    var layer = stack[index++];
+    const layer = stack[index++];
 
     // all done
     if (!layer) {
@@ -153,8 +153,8 @@ proto.handle = function handle(req, res, out) {
     }
 
     // route data
-    var path = parseUrl(req).pathname || '/';
-    var route = layer.route;
+    const path = parseUrl(req).pathname || '/';
+    const route = layer.route;
 
     // skip this layer if the route doesn't match
     if (path.toLowerCase().substr(0, route.length) !== route.toLowerCase()) {
@@ -162,7 +162,7 @@ proto.handle = function handle(req, res, out) {
     }
 
     // skip if route match does not border "/", ".", or end
-    var c = path.length > route.length && path[route.length];
+    const c = path.length > route.length && path[route.length];
     if (c && c !== '/' && c !== '.') {
       return next(err);
     }
@@ -174,7 +174,7 @@ proto.handle = function handle(req, res, out) {
 
       // ensure leading slash
       if (!protohost && req.url[0] !== '/') {
-        req.url = '/' + req.url;
+        req.url = `/${req.url}`;
         slashAdded = true;
       }
     }
@@ -184,7 +184,7 @@ proto.handle = function handle(req, res, out) {
   }
 
   next();
-};
+}
 
 /**
  * Listen for connections.
@@ -212,10 +212,10 @@ proto.handle = function handle(req, res, out) {
  * @api public
  */
 
-proto.listen = function listen() {
-  var server = http.createServer(this);
-  return server.listen.apply(server, arguments);
-};
+function listen() {
+  const server = http.createServer(this);
+  return server.listen(...arguments);
+}
 
 /**
  * Invoke a route handle.
@@ -223,9 +223,9 @@ proto.listen = function listen() {
  */
 
 function call(handle, route, err, req, res, next) {
-  var arity = handle.length;
-  var error = err;
-  var hasError = Boolean(err);
+  const arity = handle.length;
+  let error = err;
+  const hasError = Boolean(err);
 
   debug('%s %s : %s', handle.name || '<anonymous>', route, req.originalUrl);
 
@@ -271,11 +271,11 @@ function getProtohost(url) {
     return undefined;
   }
 
-  var searchIndex = url.indexOf('?');
-  var pathLength = searchIndex !== -1
+  const searchIndex = url.indexOf('?');
+  const pathLength = searchIndex !== -1
     ? searchIndex
     : url.length;
-  var fqdnIndex = url.substr(0, pathLength).indexOf('://');
+  const fqdnIndex = url.substr(0, pathLength).indexOf('://');
 
   return fqdnIndex !== -1
     ? url.substr(0, url.indexOf('/', 3 + fqdnIndex))
