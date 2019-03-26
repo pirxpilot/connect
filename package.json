@@ -18,7 +18,6 @@
   "repository": "pirxpilot/connect",
   "dependencies": {
     "debug": "2.6.9",
-    "finalhandler": "1.1.1",
     "parseurl": "~1.3.2"
   },
   "devDependencies": {

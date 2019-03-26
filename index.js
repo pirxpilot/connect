@@ -13,7 +13,6 @@
 
 const debug = require('debug')('connect:dispatcher');
 const { EventEmitter } = require('events').EventEmitter;
-const finalhandler = require('finalhandler');
 const http = require('http');
 const parseUrl = require('parseurl');
 
@@ -29,7 +28,6 @@ module.exports = createServer;
  * @private
  */
 
-const env = process.env.NODE_ENV || 'development';
 const proto = {
   use,
   handle,
@@ -116,18 +114,12 @@ function use(route, fn) {
  * @private
  */
 
-function handle(req, res, out) {
+function handle(req, res, done = finalhandler(req, res)) {
   let index = 0;
   const protohost = getProtohost(req.url) || '';
   let removed = '';
   let slashAdded = false;
   const stack = this.stack;
-
-  // final function handler
-  const done = out || finalhandler(req, res, {
-    env,
-    onerror: logerror
-  });
 
   // store the original URL
   req.originalUrl = req.originalUrl || req.url;
@@ -249,17 +241,6 @@ function call(handle, route, err, req, res, next) {
 }
 
 /**
- * Log error using console.error.
- *
- * @param {Error} err
- * @private
- */
-
-function logerror(err) {
-  if (env !== 'test') console.error(err.stack || err.toString());
-}
-
-/**
  * Get get protocol + host for a URL.
  *
  * @param {string} url
@@ -282,4 +263,44 @@ function getProtohost(url) {
   }
 
   return url.slice(0, url.indexOf('/', 3 + fqdnIndex));
+}
+
+function finalhandler (req, res) {
+
+  return function (err) {
+
+    // ignore 404 on in-flight response
+    if (!err && res.headersSent) {
+      debug('cannot 404 after headers sent');
+      return;
+    }
+
+    let status = 404;
+    // unhandled error
+    if (err) {
+      const { statusCode } = res;
+
+      if (typeof statusCode === 'number' && statusCode >= 400 && statusCode <= 599) {
+        status = statusCode;
+      } else if (typeof err === 'number') {
+        // respect status code from error
+        status = err;
+      } else if (err) {
+        status = 500;
+      }
+    }
+
+    debug('default %s', status);
+
+    // cannot actually respond
+    if (res.headersSent) {
+      debug('cannot %d after headers sent', status);
+      req.socket.destroy();
+      return;
+    }
+
+    // send response
+    res.statusCode = status;
+    res.end();
+  };
 }

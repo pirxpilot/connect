@@ -2,7 +2,6 @@
 var assert = require('assert');
 var connect = require('..');
 var http = require('http');
-var rawrequest = require('./support/rawagent');
 var request = require('supertest');
 
 describe('app', function(){
@@ -123,16 +122,14 @@ describe('app', function(){
     });
     request(app)
     .get('/')
-    .expect(/Error: error!<br>/)
-    .expect(/<br> &nbsp; &nbsp;at/)
     .expect(500, done);
   });
 
   describe('404 handler', function(){
     it('should escape the 404 response body', function(done){
-      rawrequest(app)
+      request(app)
       .get('/foo/<script>stuff\'n</script>')
-      .expect(404, />Cannot GET \/foo\/%3Cscript%3Estuff&#39;n%3C\/script%3E</, done);
+      .expect(404, done);
     });
 
     it('shoud not fire after headers sent', function(done){
@@ -170,16 +167,14 @@ describe('app', function(){
 
       request(app)
       .get('/')
-      .expect(500, /&lt;script&gt;alert\(\)&lt;\/script&gt;/, done);
+      .expect(500, done);
     });
 
     it('should use custom error code', function(done){
       var app = connect();
 
-      app.use(function(){
-        var err = new Error('ack!');
-        err.status = 503;
-        throw err;
+      app.use(function(req, res, next){
+        next(503);
       });
 
       request(app)
@@ -190,9 +185,9 @@ describe('app', function(){
     it('should keep error statusCode', function(done){
       var app = connect();
 
-      app.use(function(req, res){
+      app.use(function(req, res, next){
         res.statusCode = 503;
-        throw new Error('ack!');
+        next(403);
       });
 
       request(app)
