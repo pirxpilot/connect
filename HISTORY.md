@@ -1,3 +1,14 @@
+
+4.0.0 / 2019-03-25
+==================
+
+ * rename to @pirxpilot/connect
+ * update and relax dependencies
+ * make finalHandler configurable
+ * use simplified finalhandler by default
+ * simplify protohost calculation
+ * rewrite in ES6
+
 3.6.7 / 2018-03-06
 ==================
 
