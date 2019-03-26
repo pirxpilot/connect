@@ -1,8 +1,6 @@
 
-var assert = require('assert');
 var connect = require('..');
-var http = require('http');
-var rawrequest = require('./support/rawagent')
+var rawrequest = require('./support/rawagent');
 
 describe('app.use()', function(){
   var app;

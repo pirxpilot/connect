@@ -1,5 +1,5 @@
 
-var assert = require('assert')
+var assert = require('assert');
 var connect = require('..');
 var request = require('supertest');
 
@@ -12,14 +12,14 @@ describe('app.listen()', function(){
     });
 
     var server = app.listen(0, function () {
-      assert.ok(server)
+      assert.ok(server);
       request(server)
       .get('/')
       .expect(200, function (err) {
         server.close(function () {
-          done(err)
-        })
-      })
+          done(err);
+        });
+      });
     });
   });
 });
