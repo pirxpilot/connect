@@ -46,8 +46,10 @@ const defer = typeof setImmediate === 'function'
  * @public
  */
 
-function createServer() {
-  function app(req, res, next){ app.handle(req, res, next); }
+function createServer({ finalhandler = makeFinalHandler } = {}) {
+  function app(req, res, next = finalhandler(req, res)){
+    app.handle(req, res, next);
+  }
   Object.assign(app, proto, EventEmitter.prototype);
   app.route = '/';
   app.stack = [];
@@ -114,7 +116,7 @@ function use(route, fn) {
  * @private
  */
 
-function handle(req, res, done = finalhandler(req, res)) {
+function handle(req, res, done = makeFinalHandler(req, res)) {
   let index = 0;
   const protohost = getProtohost(req.url) || '';
   let removed = '';
@@ -265,7 +267,7 @@ function getProtohost(url) {
   return url.slice(0, url.indexOf('/', 3 + fqdnIndex));
 }
 
-function finalhandler (req, res) {
+function makeFinalHandler(req, res) {
 
   return function (err) {
 
