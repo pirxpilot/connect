@@ -12,4 +12,10 @@ test-cov:
 test-travis:
 	nyc --reporter=html --reporter=text $(MAKE) test
 
-.PHONY: check lint test test-cov test-travis
+clean:
+	rm -rf .nyc_output coverage
+
+distclean: clean
+	rm -rf yarn.lock node_modules
+
+.PHONY: check lint test test-cov test-travis clean distclean
