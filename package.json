@@ -21,7 +21,7 @@
     "parseurl": "~1"
   },
   "devDependencies": {
-    "jshint": "~2",
+    "@pirxpilot/jshint": "~3",
     "mocha": "~6",
     "nyc": "~13",
     "supertest": "~4"

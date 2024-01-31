@@ -1,7 +1,7 @@
 check: lint test
 
 lint:
-	jshint index.js test
+	node_modules/.bin/jshint index.js test
 
 test:
 	mocha --require test/support/env --reporter spec --bail --check-leaks test
