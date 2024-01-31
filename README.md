@@ -1,5 +1,5 @@
 [![NPM Version][npm-image]][npm-url]
-[![Build Status][travis-image]][travis-url]
+[![Build Status][build-image]][build-url]
 
 # @pirxpilot/connect
 
@@ -225,7 +225,7 @@ The current lead maintainer is [Douglas Christopher Wilson](https://github.com/d
 [MIT](LICENSE)
 
 [connect]: htps://github.com/sencha/connect
-[npm-image]: https://img.shields.io/npm/v/@pirxpilot/connect.svg
+[npm-image]: https://img.shields.io/npm/v/@pirxpilot/connect
 [npm-url]: https://npmjs.org/package/@pirxpilot/connect
-[travis-image]: https://img.shields.io/travis/com/pirxpilot/connect.svg
-[travis-url]: https://travis-ci.com/pirxpilot/connect
+[build-image]: https://img.shields.io/github/actions/workflow/status/pirxpilot/connect/check.yaml?branch=main
+[build-url]: https://github.com/pirxpilot/connect/actions/workflows/check.yaml
