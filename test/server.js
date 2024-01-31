@@ -1,37 +1,38 @@
+const { describe, it, beforeEach } = require('node:test');
+const assert = require('node:assert/strict');
 
-var assert = require('assert');
-var connect = require('..');
-var http = require('http');
-var request = require('supertest');
+const connect = require('..');
+const http = require('http');
+const request = require('supertest');
 
-describe('app', function(){
-  var app;
+describe('app', function () {
+  let app;
 
-  beforeEach(function(){
+  beforeEach(function () {
     app = connect();
   });
 
-  it('should inherit from event emitter', function(done){
+  it('should inherit from event emitter', function (_, done) {
     app.on('foo', done);
     app.emit('foo');
   });
 
-  it('should work in http.createServer', function(done){
-    var app = connect();
+  it('should work in http.createServer', function (_, done) {
+    const app = connect();
 
     app.use(function (req, res) {
       res.end('hello, world!');
     });
 
-    var server = http.createServer(app);
+    const server = http.createServer(app);
 
     request(server)
-    .get('/')
-    .expect(200, 'hello, world!', done);
+      .get('/')
+      .expect(200, 'hello, world!', done);
   });
 
-  it('should be a callable function', function(done){
-    var app = connect();
+  it('should be a callable function', function (_, done) {
+    const app = connect();
 
     app.use(function (req, res) {
       res.end('hello, world!');
@@ -42,15 +43,15 @@ describe('app', function(){
       app(req, res);
     }
 
-    var server = http.createServer(handler);
+    const server = http.createServer(handler);
 
     request(server)
-    .get('/')
-    .expect(200, 'oh, hello, world!', done);
+      .get('/')
+      .expect(200, 'oh, hello, world!', done);
   });
 
-  it('should invoke callback if request not handled', function(done){
-    var app = connect();
+  it('should invoke callback if request not handled', function (_, done) {
+    const app = connect();
 
     app.use('/foo', function (req, res) {
       res.end('hello, world!');
@@ -58,20 +59,20 @@ describe('app', function(){
 
     function handler(req, res) {
       res.write('oh, ');
-      app(req, res, function() {
+      app(req, res, function () {
         res.end('no!');
       });
     }
 
-    var server = http.createServer(handler);
+    const server = http.createServer(handler);
 
     request(server)
-    .get('/')
-    .expect(200, 'oh, no!', done);
+      .get('/')
+      .expect(200, 'oh, no!', done);
   });
 
-  it('should invoke callback on error', function(done){
-    var app = connect();
+  it('should invoke callback on error', function (_, done) {
+    const app = connect();
 
     app.use(function () {
       throw new Error('boom!');
@@ -79,155 +80,156 @@ describe('app', function(){
 
     function handler(req, res) {
       res.write('oh, ');
-      app(req, res, function(err) {
+      app(req, res, function (err) {
         res.end(err.message);
       });
     }
 
-    var server = http.createServer(handler);
+    const server = http.createServer(handler);
 
     request(server)
-    .get('/')
-    .expect(200, 'oh, boom!', done);
+      .get('/')
+      .expect(200, 'oh, boom!', done);
   });
 
-  it('should work as middleware', function(done){
+  it('should work as middleware', function (_, done) {
     // custom server handler array
-    var handlers = [connect(), function(req, res){
-      res.writeHead(200, {'Content-Type': 'text/plain'});
+    const handlers = [connect(), function (req, res) {
+      res.writeHead(200, { 'Content-Type': 'text/plain' });
       res.end('Ok');
     }];
 
     // execute callbacks in sequence
-    var n = 0;
-    function run(req, res){
+    let n = 0;
+
+    function run(req, res) {
       if (handlers[n]) {
-        handlers[n++](req, res, function(){
+        handlers[n++](req, res, function () {
           run(req, res);
         });
       }
     }
 
     // create a non-connect server
-    var server = http.createServer(run);
+    const server = http.createServer(run);
 
     request(server)
-    .get('/')
-    .expect(200, 'Ok', done);
+      .get('/')
+      .expect(200, 'Ok', done);
   });
 
-  it('should escape the 500 response body', function(done){
-    app.use(function(req, res, next){
+  it('should escape the 500 response body', function (_, done) {
+    app.use(function (req, res, next) {
       next(new Error('error!'));
     });
     request(app)
-    .get('/')
-    .expect(500, done);
+      .get('/')
+      .expect(500, done);
   });
 
-  describe('404 handler', function(){
-    it('should escape the 404 response body', function(done){
+  describe('404 handler', function () {
+    it('should escape the 404 response body', function (_, done) {
       request(app)
-      .get('/foo/<script>stuff\'n</script>')
-      .expect(404, done);
+        .get('/foo/<script>stuff\'n</script>')
+        .expect(404, done);
     });
 
-    it('shoud not fire after headers sent', function(done){
-      var app = connect();
+    it('shoud not fire after headers sent', function (_, done) {
+      const app = connect();
 
-      app.use(function(req, res, next){
+      app.use(function (req, res, next) {
         res.write('body');
         res.end();
         process.nextTick(next);
       });
 
       request(app)
-      .get('/')
-      .expect(200, done);
+        .get('/')
+        .expect(200, done);
     });
 
-    it('shoud have no body for HEAD', function(done){
-      var app = connect();
+    it('shoud have no body for HEAD', function (_, done) {
+      const app = connect();
 
       request(app)
-      .head('/')
-      .expect(404)
-      .expect(shouldHaveNoBody())
-      .end(done);
+        .head('/')
+        .expect(404)
+        .expect(shouldHaveNoBody())
+        .end(done);
     });
   });
 
-  describe('error handler', function(){
-    it('should have escaped response body', function(done){
-      var app = connect();
+  describe('error handler', function () {
+    it('should have escaped response body', function (_, done) {
+      const app = connect();
 
-      app.use(function(){
+      app.use(function () {
         throw new Error('<script>alert()</script>');
       });
 
       request(app)
-      .get('/')
-      .expect(500, done);
+        .get('/')
+        .expect(500, done);
     });
 
-    it('should use custom error code', function(done){
-      var app = connect();
+    it('should use custom error code', function (_, done) {
+      const app = connect();
 
-      app.use(function(req, res, next){
+      app.use(function (req, res, next) {
         next(503);
       });
 
       request(app)
-      .get('/')
-      .expect(503, done);
+        .get('/')
+        .expect(503, done);
     });
 
-    it('should keep error statusCode', function(done){
-      var app = connect();
+    it('should keep error statusCode', function (_, done) {
+      const app = connect();
 
-      app.use(function(req, res, next){
+      app.use(function (req, res, next) {
         res.statusCode = 503;
         next(403);
       });
 
       request(app)
-      .get('/')
-      .expect(503, done);
+        .get('/')
+        .expect(503, done);
     });
 
-    it('shoud not fire after headers sent', function(done){
-      var app = connect();
+    it('shoud not fire after headers sent', function (_, done) {
+      const app = connect();
 
-      app.use(function(req, res, next){
+      app.use(function (req, res, next) {
         res.write('body');
         res.end();
-        process.nextTick(function() {
+        process.nextTick(function () {
           next(new Error('ack!'));
         });
       });
 
       request(app)
-      .get('/')
-      .expect(200, done);
+        .get('/')
+        .expect(200, done);
     });
 
-    it('shoud have no body for HEAD', function(done){
-      var app = connect();
+    it('shoud have no body for HEAD', function (_, done) {
+      const app = connect();
 
-      app.use(function(){
+      app.use(function () {
         throw new Error('ack!');
       });
 
       request(app)
-      .head('/')
-      .expect(500)
-      .expect(shouldHaveNoBody())
-      .end(done);
+        .head('/')
+        .expect(500)
+        .expect(shouldHaveNoBody())
+        .end(done);
     });
   });
 });
 
-function shouldHaveNoBody () {
+function shouldHaveNoBody() {
   return function (res) {
     assert.ok(res.text === '' || res.text === undefined);
   };

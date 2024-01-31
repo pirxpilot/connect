@@ -22,9 +22,7 @@
   },
   "devDependencies": {
     "@pirxpilot/jshint": "~3",
-    "mocha": "~6",
-    "nyc": "~13",
-    "supertest": "~4"
+    "supertest": "~6"
   },
   "license": "MIT",
   "files": [
