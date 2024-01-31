@@ -21,10 +21,8 @@
     "parseurl": "~1"
   },
   "devDependencies": {
-    "jshint": "~2",
-    "mocha": "~6",
-    "nyc": "~13",
-    "supertest": "~4"
+    "@pirxpilot/jshint": "~3",
+    "supertest": "~6"
   },
   "license": "MIT",
   "files": [

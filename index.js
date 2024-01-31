@@ -35,9 +35,9 @@ const proto = {
 };
 
 /* istanbul ignore next */
-const defer = typeof setImmediate === 'function'
-  ? setImmediate
-  : fn => process.nextTick(fn.bind(...arguments));
+const defer = typeof setImmediate === 'function' ?
+  setImmediate :
+  fn => process.nextTick(fn.bind(...arguments));
 
 /**
  * Create a new connect server.
@@ -47,7 +47,7 @@ const defer = typeof setImmediate === 'function'
  */
 
 function createServer({ finalhandler = makeFinalHandler } = {}) {
-  function app(req, res, next = finalhandler(req, res)){
+  function app(req, res, next = finalhandler(req, res)) {
     app.handle(req, res, next);
   }
   Object.assign(app, proto, EventEmitter.prototype);

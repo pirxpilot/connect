@@ -12,7 +12,7 @@ class RawRequest {
 
   expect(status, body, callback) {
     const request = this;
-    this.agent._start(function onStart () {
+    this.agent._start(function onStart() {
       const req = http.request({
         host: '127.0.0.1',
         method: request.method,
@@ -24,8 +24,8 @@ class RawRequest {
         let buf = '';
 
         res.setEncoding('utf8');
-        res.on('data', function onData (s) { buf += s; });
-        res.on('end', function onEnd () {
+        res.on('data', function onData(s) { buf += s; });
+        res.on('end', function onEnd() {
           let err = null;
 
           try {
@@ -40,7 +40,7 @@ class RawRequest {
             err = e;
           }
 
-          request.agent._close(function onClose () {
+          request.agent._close(function onClose() {
             callback(err);
           });
         });
@@ -84,13 +84,13 @@ class RawAgent {
     }
 
     const agent = this;
-    this._server.on('listening', function onListening () {
+    this._server.on('listening', function onListening() {
       agent._port = this.address().port;
       cb();
     });
   }
 }
 
-function createRawAgent (app) {
+function createRawAgent(app) {
   return new RawAgent(app);
 }

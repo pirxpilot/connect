@@ -1,25 +1,26 @@
+const { describe, it } = require('node:test');
+const assert = require('node:assert/strict');
 
-var assert = require('assert');
-var connect = require('..');
-var request = require('supertest');
+const connect = require('..');
+const request = require('supertest');
 
-describe('app.listen()', function(){
-  it('should wrap in an http.Server', function(done){
-    var app = connect();
+describe('app.listen()', function () {
+  it('should wrap in an http.Server', function (_, done) {
+    const app = connect();
 
-    app.use(function(req, res){
+    app.use(function (req, res) {
       res.end();
     });
 
-    var server = app.listen(0, function () {
+    const server = app.listen(0, function () {
       assert.ok(server);
       request(server)
-      .get('/')
-      .expect(200, function (err) {
-        server.close(function () {
-          done(err);
+        .get('/')
+        .expect(200, function (err) {
+          server.close(function () {
+            done(err);
+          });
         });
-      });
     });
   });
 });
