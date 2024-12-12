@@ -22,7 +22,7 @@
   },
   "devDependencies": {
     "@pirxpilot/jshint": "~3",
-    "supertest": "~6"
+    "supertest": "~7"
   },
   "license": "MIT",
   "files": [
