@@ -15,7 +15,10 @@
     "connect",
     "rack"
   ],
-  "repository": "pirxpilot/connect",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pirxpilot/connect.git"
+  },
   "dependencies": {
     "debug": "~4",
     "parseurl": "~1"
