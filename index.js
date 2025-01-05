@@ -11,10 +11,11 @@
  * @private
  */
 
-const debug = require('debug')('connect:dispatcher');
-const { EventEmitter } = require('events').EventEmitter;
-const http = require('http');
+const { EventEmitter } = require('node:events');
+const http = require('node:http');
 const parseUrl = require('parseurl');
+
+const debug = require('debug')('connect:dispatcher');
 
 /**
  * Module exports.

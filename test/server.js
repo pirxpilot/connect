@@ -2,7 +2,7 @@ const { describe, it, beforeEach } = require('node:test');
 const assert = require('node:assert/strict');
 
 const connect = require('..');
-const http = require('http');
+const http = require('node:http');
 const request = require('supertest');
 
 describe('app', function () {
