@@ -35,11 +35,6 @@ const proto = {
   listen
 };
 
-/* istanbul ignore next */
-const defer = typeof setImmediate === 'function' ?
-  setImmediate :
-  fn => process.nextTick(fn.bind(...arguments));
-
 /**
  * Create a new connect server.
  *
@@ -136,7 +131,7 @@ function handle(req, res, done = makeFinalHandler(req, res)) {
 
     // all done
     if (!layer) {
-      defer(done, err);
+      setImmediate(done, err);
       return;
     }
 
