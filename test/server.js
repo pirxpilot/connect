@@ -17,7 +17,7 @@ describe('app', function () {
     app.emit('foo');
   });
 
-  it('should work in http.createServer', function (_, done) {
+  it('should work in http.createServer', function () {
     const app = connect();
 
     app.use(function (req, res) {
@@ -26,12 +26,12 @@ describe('app', function () {
 
     const server = http.createServer(app);
 
-    request(server)
+    return request(server)
       .get('/')
-      .expect(200, 'hello, world!', done);
+      .expect(200, 'hello, world!');
   });
 
-  it('should be a callable function', function (_, done) {
+  it('should be a callable function', function () {
     const app = connect();
 
     app.use(function (req, res) {
@@ -45,12 +45,12 @@ describe('app', function () {
 
     const server = http.createServer(handler);
 
-    request(server)
+    return request(server)
       .get('/')
-      .expect(200, 'oh, hello, world!', done);
+      .expect(200, 'oh, hello, world!');
   });
 
-  it('should invoke callback if request not handled', function (_, done) {
+  it('should invoke callback if request not handled', function () {
     const app = connect();
 
     app.use('/foo', function (req, res) {
@@ -66,12 +66,12 @@ describe('app', function () {
 
     const server = http.createServer(handler);
 
-    request(server)
+    return request(server)
       .get('/')
-      .expect(200, 'oh, no!', done);
+      .expect(200, 'oh, no!');
   });
 
-  it('should invoke callback on error', function (_, done) {
+  it('should invoke callback on error', function () {
     const app = connect();
 
     app.use(function () {
@@ -87,12 +87,12 @@ describe('app', function () {
 
     const server = http.createServer(handler);
 
-    request(server)
+    return request(server)
       .get('/')
-      .expect(200, 'oh, boom!', done);
+      .expect(200, 'oh, boom!');
   });
 
-  it('should work as middleware', function (_, done) {
+  it('should work as middleware', function () {
     // custom server handler array
     const handlers = [connect(), function (req, res) {
       res.writeHead(200, { 'Content-Type': 'text/plain' });
@@ -113,28 +113,28 @@ describe('app', function () {
     // create a non-connect server
     const server = http.createServer(run);
 
-    request(server)
+    return request(server)
       .get('/')
-      .expect(200, 'Ok', done);
+      .expect(200, 'Ok');
   });
 
-  it('should escape the 500 response body', function (_, done) {
+  it('should escape the 500 response body', function () {
     app.use(function (req, res, next) {
       next(new Error('error!'));
     });
-    request(app)
+    return request(app)
       .get('/')
-      .expect(500, done);
+      .expect(500);
   });
 
   describe('404 handler', function () {
-    it('should escape the 404 response body', function (_, done) {
-      request(app)
+    it('should escape the 404 response body', function () {
+      return request(app)
         .get('/foo/<script>stuff\'n</script>')
-        .expect(404, done);
+        .expect(404);
     });
 
-    it('shoud not fire after headers sent', function (_, done) {
+    it('shoud not fire after headers sent', function () {
       const app = connect();
 
       app.use(function (req, res, next) {
@@ -143,48 +143,47 @@ describe('app', function () {
         process.nextTick(next);
       });
 
-      request(app)
+      return request(app)
         .get('/')
-        .expect(200, done);
+        .expect(200);
     });
 
-    it('shoud have no body for HEAD', function (_, done) {
+    it('shoud have no body for HEAD', function () {
       const app = connect();
 
-      request(app)
+      return request(app)
         .head('/')
         .expect(404)
-        .expect(shouldHaveNoBody())
-        .end(done);
+        .expect(shouldHaveNoBody());
     });
   });
 
   describe('error handler', function () {
-    it('should have escaped response body', function (_, done) {
+    it('should have escaped response body', function () {
       const app = connect();
 
       app.use(function () {
         throw new Error('<script>alert()</script>');
       });
 
-      request(app)
+      return request(app)
         .get('/')
-        .expect(500, done);
+        .expect(500);
     });
 
-    it('should use custom error code', function (_, done) {
+    it('should use custom error code', function () {
       const app = connect();
 
       app.use(function (req, res, next) {
         next(503);
       });
 
-      request(app)
+      return request(app)
         .get('/')
-        .expect(503, done);
+        .expect(503);
     });
 
-    it('should keep error statusCode', function (_, done) {
+    it('should keep error statusCode', function () {
       const app = connect();
 
       app.use(function (req, res, next) {
@@ -192,12 +191,12 @@ describe('app', function () {
         next(403);
       });
 
-      request(app)
+      return request(app)
         .get('/')
-        .expect(503, done);
+        .expect(503);
     });
 
-    it('shoud not fire after headers sent', function (_, done) {
+    it('shoud not fire after headers sent', function () {
       const app = connect();
 
       app.use(function (req, res, next) {
@@ -208,23 +207,22 @@ describe('app', function () {
         });
       });
 
-      request(app)
+      return request(app)
         .get('/')
-        .expect(200, done);
+        .expect(200);
     });
 
-    it('shoud have no body for HEAD', function (_, done) {
+    it('shoud have no body for HEAD', function () {
       const app = connect();
 
       app.use(function () {
         throw new Error('ack!');
       });
 
-      request(app)
+      return request(app)
         .head('/')
         .expect(500)
-        .expect(shouldHaveNoBody())
-        .end(done);
+        .expect(shouldHaveNoBody());
     });
   });
 });
