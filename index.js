@@ -112,7 +112,7 @@ function use(...args) {
 
 function handle(req, res, done = makeFinalHandler(req, res)) {
   let index = 0;
-  const protohost = getProtohost(req.url) ?? '';
+  const protohost = getProtohost(req.url);
   let removed = '';
   let slashAdded = false;
   const { stack } = this;
@@ -245,17 +245,17 @@ function call(handle, route, err, req, res, next) {
 
 function getProtohost(url) {
   if (url.length === 0 || url[0] === '/') {
-    return;
+    return '';
   }
 
   const fqdnIndex = url.indexOf('://');
   if (fqdnIndex === -1) {
-    return;
+    return '';
   }
 
   const searchIndex = url.indexOf('?');
   if (searchIndex > -1 && fqdnIndex > searchIndex) {
-    return;
+    return '';
   }
 
   return url.slice(0, url.indexOf('/', 3 + fqdnIndex));
