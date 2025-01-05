@@ -215,11 +215,17 @@ function call(handle, route, err, req, res, next) {
   try {
     if (hasError && arity === 4) {
       // error-handling middleware
-      handle(err, req, res, next);
+      const p = handle(err, req, res, next);
+      if (p instanceof Promise) {
+        p.catch((err = new Error('Promise rejected.')) => next(err));
+      }
       return;
     } else if (!hasError && arity < 4) {
       // request-handling middleware
-      handle(req, res, next);
+      const p = handle(req, res, next);
+      if (p instanceof Promise) {
+        p.catch((err = new Error('Promise rejected.')) => next(err));
+      }
       return;
     }
   } catch (e) {

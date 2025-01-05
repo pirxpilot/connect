@@ -5,6 +5,8 @@ const connect = require('..');
 const http = require('node:http');
 const request = require('supertest');
 
+/* jshint unused:vars */
+
 describe('app', function () {
   let app;
 
@@ -53,9 +55,11 @@ describe('app', function () {
   it('should invoke callback if request not handled', function () {
     const app = connect();
 
-    app.use('/foo', function (req, res) {
-      res.end('hello, world!');
+    /* node:coverage disable */
+    app.use('/foo', function () {
+      assert.fail('should not be called');
     });
+    /* node:coverage enable */
 
     function handler(req, res) {
       res.write('oh, ');
@@ -224,6 +228,94 @@ describe('app', function () {
         .expect(500)
         .expect(shouldHaveNoBody());
     });
+  });
+});
+
+describe('should work with async handlers', function () {
+  it('should work with async/await', function () {
+    const app = connect();
+
+    app.use(async function (req, res) {
+      await new Promise((resolve) => {
+        setTimeout(resolve, 1);
+      });
+
+      res.end('hello, world!');
+    });
+
+    return request(app)
+      .get('/')
+      .expect(200, 'hello, world!');
+  });
+
+  it('should work with async/await error', function () {
+    const app = connect();
+
+    app.use(async function () {
+      throw new Error('boom!');
+    });
+
+    return request(app)
+      .get('/')
+      .expect(500);
+  });
+
+  it('should work when handler returns rejected promise', function () {
+    const app = connect();
+
+    app.use(function () {
+      return Promise.reject();
+    });
+
+    app.use(function (err, _req, res, _next) {
+      res.end(err.message);
+    });
+
+    return request(app)
+      .get('/')
+      .expect(200, 'Promise rejected.');
+  });
+
+  it('should call error handler after exception in async error handler', function () {
+    const app = connect();
+
+    app.use(async function () {
+      throw new Error('boom! 1');
+    });
+
+    app.use(async function (err, _req, _res, _next) {
+      assert.equal(err.message, 'boom! 1');
+      throw new Error('boom! 2');
+    });
+
+    app.use(function (err, _req, res, _next) {
+      res.end(err.message);
+    });
+
+    return request(app)
+      .get('/')
+      .expect(200, 'boom! 2');
+  });
+
+  it('should work when error handler returns rejected promise', function () {
+    const app = connect();
+
+    app.use(async function () {
+      throw new Error('boom! 1');
+    });
+
+    app.use(function (err, _req, _res, _next) {
+      assert.equal(err.message, 'boom! 1');
+      return Promise.reject();
+    });
+
+    app.use(function (err, _req, res, _next) {
+      res.end(err.message);
+    });
+
+    return request(app)
+      .get('/')
+      .expect(200, 'Promise rejected.');
   });
 });
 
