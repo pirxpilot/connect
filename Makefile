@@ -4,10 +4,10 @@ lint:
 	node_modules/.bin/jshint index.js test
 
 test:
-	node --require ./test/support/env.js --test
+	node --test
 
 test-cov:
-	node --require ./test/support/env.js --experimental-test-coverage --test
+	node --experimental-test-coverage --test
 
 distclean: clean
 	rm -rf yarn.lock node_modules

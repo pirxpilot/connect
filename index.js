@@ -11,10 +11,11 @@
  * @private
  */
 
-const debug = require('debug')('connect:dispatcher');
-const { EventEmitter } = require('events').EventEmitter;
-const http = require('http');
+const { EventEmitter } = require('node:events');
+const http = require('node:http');
 const parseUrl = require('parseurl');
+
+const debug = require('debug')('connect:dispatcher');
 
 /**
  * Module exports.
@@ -33,11 +34,6 @@ const proto = {
   handle,
   listen
 };
-
-/* istanbul ignore next */
-const defer = typeof setImmediate === 'function' ?
-  setImmediate :
-  fn => process.nextTick(fn.bind(...arguments));
 
 /**
  * Create a new connect server.
@@ -73,23 +69,16 @@ function createServer({ finalhandler = makeFinalHandler } = {}) {
  * @public
  */
 
-function use(route, fn) {
-  let handle = fn;
-  let path = route;
-
+function use(...args) {
+  let handle = args.at(-1);
   // default route to '/'
-  if (typeof route !== 'string') {
-    handle = route;
-    path = '/';
-  }
+  let route = args.length > 1 ? args[0] : '/';
 
   // wrap sub-apps
   if (typeof handle.handle === 'function') {
     const server = handle;
-    server.route = path;
-    handle = function (req, res, next) {
-      server.handle(req, res, next);
-    };
+    server.route = route;
+    handle = (req, res, next) => server.handle(req, res, next);
   }
 
   // wrap vanilla http.Servers
@@ -98,13 +87,13 @@ function use(route, fn) {
   }
 
   // strip trailing slash
-  if (path[path.length - 1] === '/') {
-    path = path.slice(0, -1);
+  if (route.at(-1) === '/') {
+    route = route.slice(0, -1);
   }
 
   // add the middleware
-  debug('use %s %s', path || '/', handle.name || 'anonymous');
-  this.stack.push({ route: path, handle });
+  debug('use %s %s', route || '/', handle.name || 'anonymous');
+  this.stack.push({ route, handle });
 
   return this;
 }
@@ -118,22 +107,22 @@ function use(route, fn) {
 
 function handle(req, res, done = makeFinalHandler(req, res)) {
   let index = 0;
-  const protohost = getProtohost(req.url) || '';
+  const protohost = getProtohost(req.url);
   let removed = '';
   let slashAdded = false;
-  const stack = this.stack;
+  const { stack } = this;
 
   // store the original URL
-  req.originalUrl = req.originalUrl || req.url;
+  req.originalUrl ??= req.url;
 
   function next(err) {
     if (slashAdded) {
-      req.url = req.url.substr(1);
+      req.url = req.url.slice(1);
       slashAdded = false;
     }
 
     if (removed.length !== 0) {
-      req.url = protohost + removed + req.url.substr(protohost.length);
+      req.url = protohost + removed + req.url.slice(protohost.length);
       removed = '';
     }
 
@@ -142,16 +131,16 @@ function handle(req, res, done = makeFinalHandler(req, res)) {
 
     // all done
     if (!layer) {
-      defer(done, err);
+      setImmediate(done, err);
       return;
     }
 
     // route data
     const path = parseUrl(req).pathname || '/';
-    const route = layer.route;
+    const { route } = layer;
 
     // skip this layer if the route doesn't match
-    if (path.toLowerCase().substr(0, route.length) !== route.toLowerCase()) {
+    if (!path.toLowerCase().startsWith(route.toLowerCase())) {
       return next(err);
     }
 
@@ -164,11 +153,11 @@ function handle(req, res, done = makeFinalHandler(req, res)) {
     // trim off the part of the url that matches the route
     if (route.length !== 0 && route !== '/') {
       removed = route;
-      req.url = protohost + req.url.substr(protohost.length + removed.length);
+      req.url = protohost + req.url.slice(protohost.length + removed.length);
 
       // ensure leading slash
       if (!protohost && req.url[0] !== '/') {
-        req.url = `/${req.url}`;
+        req.url = '/' + req.url;
         slashAdded = true;
       }
     }
@@ -206,9 +195,9 @@ function handle(req, res, done = makeFinalHandler(req, res)) {
  * @api public
  */
 
-function listen() {
+function listen(...args) {
   const server = http.createServer(this);
-  return server.listen(...arguments);
+  return server.listen(...args);
 }
 
 /**
@@ -218,19 +207,25 @@ function listen() {
 
 function call(handle, route, err, req, res, next) {
   const arity = handle.length;
-  let error = err;
   const hasError = Boolean(err);
 
   debug('%s %s : %s', handle.name || '<anonymous>', route, req.originalUrl);
 
+  let error = err;
   try {
     if (hasError && arity === 4) {
       // error-handling middleware
-      handle(err, req, res, next);
+      const p = handle(err, req, res, next);
+      if (p instanceof Promise) {
+        p.catch((err = new Error('Promise rejected.')) => next(err));
+      }
       return;
     } else if (!hasError && arity < 4) {
       // request-handling middleware
-      handle(req, res, next);
+      const p = handle(req, res, next);
+      if (p instanceof Promise) {
+        p.catch((err = new Error('Promise rejected.')) => next(err));
+      }
       return;
     }
   } catch (e) {
@@ -251,17 +246,17 @@ function call(handle, route, err, req, res, next) {
 
 function getProtohost(url) {
   if (url.length === 0 || url[0] === '/') {
-    return;
+    return '';
   }
 
   const fqdnIndex = url.indexOf('://');
   if (fqdnIndex === -1) {
-    return;
+    return '';
   }
 
   const searchIndex = url.indexOf('?');
   if (searchIndex > -1 && fqdnIndex > searchIndex) {
-    return;
+    return '';
   }
 
   return url.slice(0, url.indexOf('/', 3 + fqdnIndex));
@@ -287,7 +282,7 @@ function makeFinalHandler(req, res) {
       } else if (typeof err === 'number') {
         // respect status code from error
         status = err;
-      } else if (err) {
+      } else {
         status = 500;
       }
     }

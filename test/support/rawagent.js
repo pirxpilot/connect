@@ -1,5 +1,5 @@
-const assert = require('assert');
-const http = require('http');
+const assert = require('node:assert/strict');
+const http = require('node:http');
 
 module.exports = createRawAgent;
 
@@ -32,7 +32,7 @@ class RawRequest {
             assert.equal(res.statusCode, status, `expected ${status} status, got ${res.statusCode}`);
 
             if (body instanceof RegExp) {
-              assert.ok(body.test(buf), `expected body ${buf} to match ${body}`);
+              assert.match(body, buf, `expected body ${buf} to match ${body}`);
             } else {
               assert.equal(buf, body, `expected ${body} response body, got ${buf}`);
             }
