@@ -1,4 +1,10 @@
 
+4.1.0 / 2025-01-05
+==================
+
+ * handle exceptions thrown by async handlers
+ * upgrade to esversion 11
+
 4.0.2 / 2024-12-12
 ==================
 
