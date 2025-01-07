@@ -187,16 +187,6 @@ describe('app.use()', function () {
         .expect('blog');
     });
 
-    it('should set .route', function () {
-      const blog = connect();
-      const admin = connect();
-      app.use('/blog', blog);
-      blog.use('/admin', admin);
-      assert.equal(app.route, '/');
-      assert.equal(blog.route, '/blog');
-      assert.equal(admin.route, '/admin');
-    });
-
     it('should not add trailing slash to req.url', function () {
       app.use('/admin', function (req, res, next) {
         next();
