@@ -43,13 +43,11 @@ const proto = {
  */
 
 function createServer({ finalhandler = makeFinalHandler } = {}) {
+  return Object.assign(app, proto, EventEmitter.prototype, { stack: [] });
+
   function app(req, res, next = finalhandler(req, res)) {
     app.handle(req, res, next);
   }
-  Object.assign(app, proto, EventEmitter.prototype);
-  app.route = '/';
-  app.stack = [];
-  return app;
 }
 
 /**
@@ -71,13 +69,10 @@ function createServer({ finalhandler = makeFinalHandler } = {}) {
 
 function use(...args) {
   let handle = args.at(-1);
-  // default route to '/'
-  let route = args.length > 1 ? args[0] : '/';
 
   // wrap sub-apps
   if (typeof handle.handle === 'function') {
     const server = handle;
-    server.route = route;
     handle = (req, res, next) => server.handle(req, res, next);
   }
 
@@ -86,9 +81,14 @@ function use(...args) {
     handle = handle.listeners('request')[0];
   }
 
-  // strip trailing slash
-  if (route.at(-1) === '/') {
-    route = route.slice(0, -1);
+  // default route emtpy route
+  let route = '';
+  if (args.length > 1) {
+    route = args[0];
+    // strip trailing slash
+    if (route.at(-1) === '/') {
+      route = route.slice(0, -1);
+    }
   }
 
   // add the middleware
