@@ -67,35 +67,43 @@ function createServer({ finalhandler = makeFinalHandler } = {}) {
  * @public
  */
 
-function use(...args) {
-  let handle = args.at(-1);
-
-  // wrap sub-apps
-  if (typeof handle.handle === 'function') {
-    const server = handle;
-    handle = (req, res, next) => server.handle(req, res, next);
-  }
-
-  // wrap vanilla http.Servers
-  if (handle instanceof http.Server) {
-    handle = handle.listeners('request')[0];
-  }
-
+function use(...handlers) {
   // default route emtpy route
   let route = '';
-  if (args.length > 1) {
-    route = args[0];
+  if (typeof handlers[0] === 'string') {
+    route = handlers.shift();
     // strip trailing slash
     if (route.at(-1) === '/') {
       route = route.slice(0, -1);
     }
   }
 
+  const stack = handlers
+    .flat(Infinity)
+    .map(handle => {
+      debug('use %s %s', route || '/', handle.name || 'anonymous');
+      return {
+        route,
+        handle: wrapHandler(handle)
+      };
+    });
+
   // add the middleware
-  debug('use %s %s', route || '/', handle.name || 'anonymous');
-  this.stack.push({ route, handle });
+  this.stack.push(...stack);
 
   return this;
+}
+
+function wrapHandler(handle) {
+  // wrap sub-apps
+  if (typeof handle.handle === 'function') {
+    return handle.handle.bind(handle);
+  }
+  // wrap vanilla http.Servers
+  if (handle instanceof http.Server) {
+    return handle.listeners('request')[0];
+  }
+  return handle;
 }
 
 /**

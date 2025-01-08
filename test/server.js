@@ -122,6 +122,27 @@ describe('app', function () {
       .expect(200, 'Ok');
   });
 
+  it('should work with multiple handlers pass to use()', function () {
+    const result = [];
+    app.use('/foo', a, b, [b, a], [a, [a, b]], b, function(req, res) {
+      res.end(result.join(''));
+    });
+    return request(app)
+      .get('/foo')
+      .expect(200, 'abbaaabb');
+
+    function a(req, res, next) {
+      result.push('a');
+      next();
+    }
+
+    function b(req, res, next) {
+      result.push('b');
+      next();
+    }
+
+  });
+
   it('should escape the 500 response body', function () {
     app.use(function (req, res, next) {
       next(new Error('error!'));
