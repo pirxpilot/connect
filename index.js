@@ -71,7 +71,7 @@ function use(...handlers) {
   // default route emtpy route
   let route = '';
   if (typeof handlers[0] === 'string') {
-    route = handlers.shift();
+    route = handlers.shift().toLowerCase();
     // strip trailing slash
     if (route.at(-1) === '/') {
       route = route.slice(0, -1);
@@ -119,6 +119,7 @@ function handle(req, res, done = makeFinalHandler(req, res)) {
   let removed = '';
   let slashAdded = false;
   const { stack } = this;
+  const path = parseUrl(req).pathname?.toLocaleLowerCase() || '/';
 
   // store the original URL
   req.originalUrl ??= req.url;
@@ -144,16 +145,15 @@ function handle(req, res, done = makeFinalHandler(req, res)) {
     }
 
     // route data
-    const path = parseUrl(req).pathname || '/';
     const { route } = layer;
 
     // skip this layer if the route doesn't match
-    if (!path.toLowerCase().startsWith(route.toLowerCase())) {
+    if (!path.startsWith(route)) {
       return next(err);
     }
 
     // skip if route match does not border "/", ".", or end
-    const c = path.length > route.length && path[route.length];
+    const c = path[route.length];
     if (c && c !== '/' && c !== '.') {
       return next(err);
     }
