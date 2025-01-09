@@ -1,4 +1,10 @@
 
+4.2.0 / 2025-01-09
+==================
+
+ * optimize route and path matching
+ * add support for multiple handlers in `use()`
+
 4.1.1 / 2025-01-07
 ==================
 
