@@ -78,15 +78,13 @@ function use(...handlers) {
     }
   }
 
-  const stack = handlers
-    .flat(Infinity)
-    .map(handle => {
-      debug('use %s %s', route || '/', handle.name || 'anonymous');
-      return {
-        route,
-        handle: wrapHandler(handle)
-      };
-    });
+  const stack = handlers.flat(Number.POSITIVE_INFINITY).map(handle => {
+    debug('use %s %s', route || '/', handle.name || 'anonymous');
+    return {
+      route,
+      handle: wrapHandler(handle)
+    };
+  });
 
   // add the middleware
   this.stack.push(...stack);
@@ -228,7 +226,8 @@ function call(handle, route, err, req, res, next) {
         p.catch((err = new Error('Promise rejected.')) => next(err));
       }
       return;
-    } else if (!hasError && arity < 4) {
+    }
+    if (!hasError && arity < 4) {
       // request-handling middleware
       const p = handle(req, res, next);
       if (p instanceof Promise) {
@@ -271,9 +270,7 @@ function getProtohost(url) {
 }
 
 function makeFinalHandler(req, res) {
-
   return function (err) {
-
     // ignore 404 on in-flight response
     if (!err && res.headersSent) {
       debug('cannot 404 after headers sent');
@@ -285,7 +282,11 @@ function makeFinalHandler(req, res) {
     if (err) {
       const { statusCode } = res;
 
-      if (typeof statusCode === 'number' && statusCode >= 400 && statusCode <= 599) {
+      if (
+        typeof statusCode === 'number' &&
+        statusCode >= 400 &&
+        statusCode <= 599
+      ) {
         status = statusCode;
       } else if (typeof err === 'number') {
         // respect status code from error

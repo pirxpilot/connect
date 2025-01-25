@@ -24,17 +24,27 @@ class RawRequest {
         let buf = '';
 
         res.setEncoding('utf8');
-        res.on('data', function onData(s) { buf += s; });
+        res.on('data', function onData(s) {
+          buf += s;
+        });
         res.on('end', function onEnd() {
           let err = null;
 
           try {
-            assert.equal(res.statusCode, status, `expected ${status} status, got ${res.statusCode}`);
+            assert.equal(
+              res.statusCode,
+              status,
+              `expected ${status} status, got ${res.statusCode}`
+            );
 
             if (body instanceof RegExp) {
               assert.match(body, buf, `expected body ${buf} to match ${body}`);
             } else {
-              assert.equal(buf, body, `expected ${body} response body, got ${buf}`);
+              assert.equal(
+                buf,
+                body,
+                `expected ${body} response body, got ${buf}`
+              );
             }
           } catch (e) {
             err = e;
