@@ -28,9 +28,7 @@ describe('app', function () {
 
     const server = http.createServer(app);
 
-    return request(server)
-      .get('/')
-      .expect(200, 'hello, world!');
+    return request(server).get('/').expect(200, 'hello, world!');
   });
 
   it('should be a callable function', function () {
@@ -47,9 +45,7 @@ describe('app', function () {
 
     const server = http.createServer(handler);
 
-    return request(server)
-      .get('/')
-      .expect(200, 'oh, hello, world!');
+    return request(server).get('/').expect(200, 'oh, hello, world!');
   });
 
   it('should invoke callback if request not handled', function () {
@@ -70,9 +66,7 @@ describe('app', function () {
 
     const server = http.createServer(handler);
 
-    return request(server)
-      .get('/')
-      .expect(200, 'oh, no!');
+    return request(server).get('/').expect(200, 'oh, no!');
   });
 
   it('should invoke callback on error', function () {
@@ -91,17 +85,18 @@ describe('app', function () {
 
     const server = http.createServer(handler);
 
-    return request(server)
-      .get('/')
-      .expect(200, 'oh, boom!');
+    return request(server).get('/').expect(200, 'oh, boom!');
   });
 
   it('should work as middleware', function () {
     // custom server handler array
-    const handlers = [connect(), function (req, res) {
-      res.writeHead(200, { 'Content-Type': 'text/plain' });
-      res.end('Ok');
-    }];
+    const handlers = [
+      connect(),
+      function (req, res) {
+        res.writeHead(200, { 'Content-Type': 'text/plain' });
+        res.end('Ok');
+      }
+    ];
 
     // execute callbacks in sequence
     let n = 0;
@@ -117,19 +112,15 @@ describe('app', function () {
     // create a non-connect server
     const server = http.createServer(run);
 
-    return request(server)
-      .get('/')
-      .expect(200, 'Ok');
+    return request(server).get('/').expect(200, 'Ok');
   });
 
   it('should work with multiple handlers pass to use()', function () {
     const result = [];
-    app.use('/foo', a, b, [b, a], [a, [a, b]], b, function(req, res) {
+    app.use('/foo', a, b, [b, a], [a, [a, b]], b, function (req, res) {
       res.end(result.join(''));
     });
-    return request(app)
-      .get('/foo')
-      .expect(200, 'abbaaabb');
+    return request(app).get('/foo').expect(200, 'abbaaabb');
 
     function a(req, res, next) {
       result.push('a');
@@ -140,23 +131,18 @@ describe('app', function () {
       result.push('b');
       next();
     }
-
   });
 
   it('should escape the 500 response body', function () {
     app.use(function (req, res, next) {
       next(new Error('error!'));
     });
-    return request(app)
-      .get('/')
-      .expect(500);
+    return request(app).get('/').expect(500);
   });
 
   describe('404 handler', function () {
     it('should escape the 404 response body', function () {
-      return request(app)
-        .get('/foo/<script>stuff\'n</script>')
-        .expect(404);
+      return request(app).get("/foo/<script>stuff'n</script>").expect(404);
     });
 
     it('shoud not fire after headers sent', function () {
@@ -168,18 +154,13 @@ describe('app', function () {
         process.nextTick(next);
       });
 
-      return request(app)
-        .get('/')
-        .expect(200);
+      return request(app).get('/').expect(200);
     });
 
     it('shoud have no body for HEAD', function () {
       const app = connect();
 
-      return request(app)
-        .head('/')
-        .expect(404)
-        .expect(shouldHaveNoBody());
+      return request(app).head('/').expect(404).expect(shouldHaveNoBody());
     });
   });
 
@@ -191,9 +172,7 @@ describe('app', function () {
         throw new Error('<script>alert()</script>');
       });
 
-      return request(app)
-        .get('/')
-        .expect(500);
+      return request(app).get('/').expect(500);
     });
 
     it('should use custom error code', function () {
@@ -203,9 +182,7 @@ describe('app', function () {
         next(503);
       });
 
-      return request(app)
-        .get('/')
-        .expect(503);
+      return request(app).get('/').expect(503);
     });
 
     it('should keep error statusCode', function () {
@@ -216,9 +193,7 @@ describe('app', function () {
         next(403);
       });
 
-      return request(app)
-        .get('/')
-        .expect(503);
+      return request(app).get('/').expect(503);
     });
 
     it('shoud not fire after headers sent', function () {
@@ -232,9 +207,7 @@ describe('app', function () {
         });
       });
 
-      return request(app)
-        .get('/')
-        .expect(200);
+      return request(app).get('/').expect(200);
     });
 
     it('shoud have no body for HEAD', function () {
@@ -244,10 +217,7 @@ describe('app', function () {
         throw new Error('ack!');
       });
 
-      return request(app)
-        .head('/')
-        .expect(500)
-        .expect(shouldHaveNoBody());
+      return request(app).head('/').expect(500).expect(shouldHaveNoBody());
     });
   });
 });
@@ -257,16 +227,14 @@ describe('should work with async handlers', function () {
     const app = connect();
 
     app.use(async function (req, res) {
-      await new Promise((resolve) => {
+      await new Promise(resolve => {
         setTimeout(resolve, 1);
       });
 
       res.end('hello, world!');
     });
 
-    return request(app)
-      .get('/')
-      .expect(200, 'hello, world!');
+    return request(app).get('/').expect(200, 'hello, world!');
   });
 
   it('should work with async/await error', function () {
@@ -276,9 +244,7 @@ describe('should work with async handlers', function () {
       throw new Error('boom!');
     });
 
-    return request(app)
-      .get('/')
-      .expect(500);
+    return request(app).get('/').expect(500);
   });
 
   it('should work when handler returns rejected promise', function () {
@@ -292,9 +258,7 @@ describe('should work with async handlers', function () {
       res.end(err.message);
     });
 
-    return request(app)
-      .get('/')
-      .expect(200, 'Promise rejected.');
+    return request(app).get('/').expect(200, 'Promise rejected.');
   });
 
   it('should call error handler after exception in async error handler', function () {
@@ -313,9 +277,7 @@ describe('should work with async handlers', function () {
       res.end(err.message);
     });
 
-    return request(app)
-      .get('/')
-      .expect(200, 'boom! 2');
+    return request(app).get('/').expect(200, 'boom! 2');
   });
 
   it('should work when error handler returns rejected promise', function () {
@@ -334,9 +296,7 @@ describe('should work with async handlers', function () {
       res.end(err.message);
     });
 
-    return request(app)
-      .get('/')
-      .expect(200, 'Promise rejected.');
+    return request(app).get('/').expect(200, 'Promise rejected.');
   });
 });
 
