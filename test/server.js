@@ -3,15 +3,15 @@ const assert = require('node:assert/strict');
 
 const connect = require('..');
 const http = require('node:http');
-const request = require('supertest');
-
-/* jshint unused:vars */
+const { makeFetch } = require('supertest-fetch');
 
 describe('app', function () {
   let app;
+  let request;
 
   beforeEach(function () {
     app = connect();
+    request = makeFetch(http.createServer(app));
   });
 
   it('should inherit from event emitter', function (_, done) {
@@ -20,20 +20,13 @@ describe('app', function () {
   });
 
   it('should work in http.createServer', function () {
-    const app = connect();
-
     app.use(function (req, res) {
       res.end('hello, world!');
     });
-
-    const server = http.createServer(app);
-
-    return request(server).get('/').expect(200, 'hello, world!');
+    return request('/').expectStatus(200).expectBody('hello, world!');
   });
 
   it('should be a callable function', function () {
-    const app = connect();
-
     app.use(function (req, res) {
       res.end('hello, world!');
     });
@@ -44,8 +37,9 @@ describe('app', function () {
     }
 
     const server = http.createServer(handler);
+    const request = makeFetch(server);
 
-    return request(server).get('/').expect(200, 'oh, hello, world!');
+    return request('/').expectStatus(200).expectBody('oh, hello, world!');
   });
 
   it('should invoke callback if request not handled', function () {
@@ -65,8 +59,9 @@ describe('app', function () {
     }
 
     const server = http.createServer(handler);
+    const request = makeFetch(server);
 
-    return request(server).get('/').expect(200, 'oh, no!');
+    return request('/').expectStatus(200).expectBody('oh, no!');
   });
 
   it('should invoke callback on error', function () {
@@ -84,8 +79,9 @@ describe('app', function () {
     }
 
     const server = http.createServer(handler);
+    const request = makeFetch(server);
 
-    return request(server).get('/').expect(200, 'oh, boom!');
+    return request('/').expectStatus(200).expectBody('oh, boom!');
   });
 
   it('should work as middleware', function () {
@@ -111,8 +107,9 @@ describe('app', function () {
 
     // create a non-connect server
     const server = http.createServer(run);
+    const request = makeFetch(server);
 
-    return request(server).get('/').expect(200, 'Ok');
+    return request('/').expectStatus(200).expectBody('Ok');
   });
 
   it('should work with multiple handlers pass to use()', function () {
@@ -120,7 +117,7 @@ describe('app', function () {
     app.use('/foo', a, b, [b, a], [a, [a, b]], b, function (req, res) {
       res.end(result.join(''));
     });
-    return request(app).get('/foo').expect(200, 'abbaaabb');
+    return request('/foo').expectStatus(200).expectBody('abbaaabb');
 
     function a(req, res, next) {
       result.push('a');
@@ -137,68 +134,56 @@ describe('app', function () {
     app.use(function (req, res, next) {
       next(new Error('error!'));
     });
-    return request(app).get('/').expect(500);
+    return request('/').expectStatus(500);
   });
 
   describe('404 handler', function () {
     it('should escape the 404 response body', function () {
-      return request(app).get("/foo/<script>stuff'n</script>").expect(404);
+      return request("/foo/<script>stuff'n</script>").expectStatus(404);
     });
 
     it('shoud not fire after headers sent', function () {
-      const app = connect();
-
       app.use(function (req, res, next) {
         res.write('body');
         res.end();
         process.nextTick(next);
       });
 
-      return request(app).get('/').expect(200);
+      return request('/').expectStatus(200);
     });
 
     it('shoud have no body for HEAD', function () {
-      const app = connect();
-
-      return request(app).head('/').expect(404).expect(shouldHaveNoBody());
+      return request('/', { method: 'HEAD' }).expectStatus(404).expectBody();
     });
   });
 
   describe('error handler', function () {
     it('should have escaped response body', function () {
-      const app = connect();
-
       app.use(function () {
         throw new Error('<script>alert()</script>');
       });
 
-      return request(app).get('/').expect(500);
+      return request('/').expectStatus(500);
     });
 
     it('should use custom error code', function () {
-      const app = connect();
-
       app.use(function (req, res, next) {
         next(503);
       });
 
-      return request(app).get('/').expect(503);
+      return request('/').expectStatus(503);
     });
 
     it('should keep error statusCode', function () {
-      const app = connect();
-
       app.use(function (req, res, next) {
         res.statusCode = 503;
         next(403);
       });
 
-      return request(app).get('/').expect(503);
+      return request('/').expectStatus(503);
     });
 
     it('shoud not fire after headers sent', function () {
-      const app = connect();
-
       app.use(function (req, res, next) {
         res.write('body');
         res.end();
@@ -207,17 +192,15 @@ describe('app', function () {
         });
       });
 
-      return request(app).get('/').expect(200);
+      return request('/').expectStatus(200);
     });
 
     it('shoud have no body for HEAD', function () {
-      const app = connect();
-
       app.use(function () {
         throw new Error('ack!');
       });
 
-      return request(app).head('/').expect(500).expect(shouldHaveNoBody());
+      return request('/', { method: 'HEAD' }).expectStatus(500).expectBody();
     });
   });
 });
@@ -233,8 +216,9 @@ describe('should work with async handlers', function () {
 
       res.end('hello, world!');
     });
+    const request = makeFetch(http.createServer(app));
 
-    return request(app).get('/').expect(200, 'hello, world!');
+    return request('/').expectStatus(200).expectBody('hello, world!');
   });
 
   it('should work with async/await error', function () {
@@ -244,7 +228,8 @@ describe('should work with async handlers', function () {
       throw new Error('boom!');
     });
 
-    return request(app).get('/').expect(500);
+    const request = makeFetch(http.createServer(app));
+    return request('/').expectStatus(500);
   });
 
   it('should work when handler returns rejected promise', function () {
@@ -258,7 +243,8 @@ describe('should work with async handlers', function () {
       res.end(err.message);
     });
 
-    return request(app).get('/').expect(200, 'Promise rejected.');
+    const request = makeFetch(http.createServer(app));
+    return request('/').expectStatus(200).expectBody('Promise rejected.');
   });
 
   it('should call error handler after exception in async error handler', function () {
@@ -277,7 +263,8 @@ describe('should work with async handlers', function () {
       res.end(err.message);
     });
 
-    return request(app).get('/').expect(200, 'boom! 2');
+    const request = makeFetch(http.createServer(app));
+    return request('/').expectStatus(200).expectBody('boom! 2');
   });
 
   it('should work when error handler returns rejected promise', function () {
@@ -296,12 +283,7 @@ describe('should work with async handlers', function () {
       res.end(err.message);
     });
 
-    return request(app).get('/').expect(200, 'Promise rejected.');
+    const request = makeFetch(http.createServer(app));
+    return request('/').expectStatus(200).expectBody('Promise rejected.');
   });
 });
-
-function shouldHaveNoBody() {
-  return function (res) {
-    assert.ok(res.text === '' || res.text === undefined);
-  };
-}
