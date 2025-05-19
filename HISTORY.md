@@ -1,4 +1,11 @@
 
+4.2.1 / 2025-05-18
+==================
+
+ * use `supertest-fetch` instead of `supertest`
+ * use biome linter
+ * format sources
+
 4.2.0 / 2025-01-09
 ==================
 
